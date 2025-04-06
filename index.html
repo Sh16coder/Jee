@@ -1,0 +1,228 @@
+<!DOCTYPE html><html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guru Study Planner</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root[data-theme='light'] {
+      --bg-color: #f0f2f5;
+      --text-color: #222;
+      --card-color: #fff;
+      --accent-color: #007bff;
+    }
+    :root[data-theme='dark'] {
+      --bg-color: #1e1f26;
+      --text-color: #f5f5f5;
+      --card-color: #2e2e3a;
+      --accent-color: #00c6ff;
+    }body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 2rem;
+}
+
+.section {
+  background-color: var(--card-color);
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+h1, h2 {
+  color: var(--accent-color);
+}
+
+input, textarea, button {
+  display: block;
+  width: 100%;
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+button {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.theme-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  padding: 0.5rem;
+  margin: 0.25rem 0;
+  border-bottom: 1px solid #ccc;
+}
+
+  </style>
+  <script type="module">
+    // Firebase config (replace with your Firebase project info)
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
+    import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';const firebaseConfig = {
+  apiKey: "AIzaSyBSxHz0oSES5RcqqX4SPVfceST3UrEGOnU",
+  authDomain: "jees-94077.firebaseapp.com",
+  databaseURL: "https://jees-94077-default-rtdb.firebaseio.com",
+  projectId: "jees-94077",
+  storageBucket: "jees-94077.firebasestorage.app",
+  messagingSenderId: "863537448366",
+  appId: "1:863537448366:web:93cb50b4a4ecdafa61b43f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+// Daily quote logic
+const quotes = [
+  "Keep pushing forward.", "Consistency is the key.", "No pain, no gain.",
+  "You were born to win.", "Do it for your future self.",
+  "Discipline beats motivation.", "JEE is just a milestone, not a mountain.",
+  "Today’s struggle builds tomorrow’s strength.", "Success requires sacrifice.",
+  "Make your future self proud." // add 20 more
+];
+document.getElementById("quote").textContent = quotes[new Date().getDate() % quotes.length];
+
+// Timetable logic
+const timetableForm = document.getElementById("timetableForm");
+const timetableList = document.getElementById("timetableList");
+timetableForm.onsubmit = (e) => {
+  e.preventDefault();
+  const time = document.getElementById("time").value;
+  const task = document.getElementById("task").value;
+  const entry = `${time} - ${task}`;
+  localStorage.setItem(time, task);
+  timetableList.innerHTML += `<li>${entry}</li>`;
+  timetableForm.reset();
+};
+
+// To-Do logic
+const todoForm = document.getElementById("todoForm");
+const todoList = document.getElementById("todoList");
+todoForm.onsubmit = (e) => {
+  e.preventDefault();
+  const task = document.getElementById("todoTask").value;
+  const deadline = new Date(document.getElementById("deadline").value);
+  const now = new Date();
+  const late = now > deadline;
+  const item = `<li style="color:${late ? 'red' : 'green'}">${task} - ${deadline.toLocaleString()}</li>`;
+  todoList.innerHTML += item;
+  todoForm.reset();
+};
+
+// Diary and resources
+window.saveDiary = () => {
+  const note = document.getElementById("diaryNote").value;
+  localStorage.setItem("diary", note);
+  alert("Diary saved!");
+}
+window.saveResources = () => {
+  const res = document.getElementById("resources").value;
+  localStorage.setItem("resources", res);
+  alert("Resources saved!");
+}
+
+// Punishments and rewards
+window.savePunishmentsRewards = () => {
+  const puns = document.getElementById("punishments").value;
+  const rews = document.getElementById("rewards").value;
+  localStorage.setItem("punishments", puns);
+  localStorage.setItem("rewards", rews);
+  alert("Saved punishments and rewards!");
+}
+
+// Theme toggle
+window.toggleTheme = () => {
+  const html = document.documentElement;
+  const isDark = html.getAttribute("data-theme") === "dark";
+  html.setAttribute("data-theme", isDark ? "light" : "dark");
+  localStorage.setItem("theme", isDark ? "light" : "dark");
+}
+window.onload = () => {
+  const savedTheme = localStorage.getItem("theme") || "light";
+  document.documentElement.setAttribute("data-theme", savedTheme);
+  document.getElementById("themeSwitcher").checked = savedTheme === "dark";
+}
+
+  </script>
+</head>
+<body>
+  <div class="theme-toggle">
+    <label for="themeSwitcher">Dark Mode</label>
+    <input type="checkbox" id="themeSwitcher" onclick="toggleTheme()">
+  </div>  <div class="container">
+    <h1 id="quote"></h1><section class="section">
+  <h2>Custom Timetable</h2>
+  <form id="timetableForm">
+    <input type="time" id="time" required />
+    <input type="text" id="task" placeholder="Task" required />
+    <button type="submit">Add Task</button>
+  </form>
+  <ul id="timetableList"></ul>
+</section>
+
+<section class="section">
+  <h2>To-Do List</h2>
+  <form id="todoForm">
+    <input type="text" id="todoTask" placeholder="Enter task" required />
+    <input type="datetime-local" id="deadline" required />
+    <button type="submit">Add To-Do</button>
+  </form>
+  <ul id="todoList"></ul>
+</section>
+
+<section class="section">
+  <h2>Question Practice</h2>
+  <form id="questionForm">
+    <input type="date" id="qpDate" required />
+    <input type="text" id="qpChapter" placeholder="Chapter" required />
+    <input type="number" id="qpTotalQuestions" placeholder="Total Questions" required />
+    <input type="number" id="qpTime" placeholder="Total Time (minutes)" required />
+    <button type="submit">Start Practice</button>
+  </form>
+  <div id="stopwatchContainer"></div>
+</section>
+
+<section class="section">
+  <h2>Daily Diary</h2>
+  <textarea id="diaryNote" placeholder="Write your daily note..."></textarea>
+  <button onclick="saveDiary()">Save Note</button>
+</section>
+
+<section class="section">
+  <h2>Study Resources</h2>
+  <textarea id="resources" placeholder="List your resources..."></textarea>
+  <button onclick="saveResources()">Save Resources</button>
+</section>
+
+<section class="section">
+  <h2>Punishments & Rewards</h2>
+  <textarea id="punishments" placeholder="Enter punishments (one per line)"></textarea>
+  <textarea id="rewards" placeholder="Enter rewards (one per line)"></textarea>
+  <button onclick="savePunishmentsRewards()">Save</button>
+</section>
+
+  </div>
+</body>
+</html>
