@@ -1008,4 +1008,78 @@ function deleteResource(resourceId) {
     
     const resources = getResources().filter(resource => resource.id != resourceId);
     localStorage.setItem('jeeProdigyResources', JSON.stringify(resources));
-    document.querySelector(`.resource-item[data-id="${resourceId}"]`)?.
+    document.querySelector(`.resource-item[data-id="${resourceId}"]`)?.remove();
+    updateResourceCount();
+}
+
+function filterResources(filter) {
+    const resourceItems = document.querySelectorAll('.resource-item');
+    
+    resourceItems.forEach(item => {
+        if (filter === 'all' || item.dataset.type.includes(filter)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function updateResourceCount() {
+    document.getElementById('total-resources').textContent = getResources().length;
+}
+
+function loadResources() {
+    document.getElementById('resources-list').innerHTML = '';
+    getResources().forEach(resource => addResourceToDOM(resource));
+    updateResourceCount();
+}
+
+function getResources() {
+    const resourcesJSON = localStorage.getItem('jeeProdigyResources');
+    return resourcesJSON ? JSON.parse(resourcesJSON) : [];
+}
+
+function saveResource(resource) {
+    const resources = getResources();
+    resources.push(resource);
+    localStorage.setItem('jeeProdigyResources', JSON.stringify(resources));
+}
+
+/*********************
+ * CORE FUNCTIONS
+ *********************/
+function initNotificationModal() {
+    const notificationModal = document.getElementById('notification-modal');
+    const closeNotification = document.querySelector('.close-notification');
+    const notificationOk = document.getElementById('notification-ok');
+    
+    closeNotification.addEventListener('click', () => notificationModal.style.display = 'none');
+    notificationOk.addEventListener('click', () => notificationModal.style.display = 'none');
+    window.addEventListener('click', (e) => {
+        if (e.target === notificationModal) notificationModal.style.display = 'none';
+    });
+}
+
+function showNotification(title, message) {
+    document.getElementById('notification-title').textContent = title;
+    document.getElementById('notification-message').textContent = message;
+    document.getElementById('notification-modal').style.display = 'flex';
+}
+
+// Initialize the application
+document.addEventListener('DOMContentLoaded', function() {
+    setDailyQuote();
+    setupTabSwitching();
+    initTimetable();
+    initTodoList();
+    initQuestionPractice();
+    initDiary();
+    initRewards();
+    initPunishments();
+    initResources();
+    initNotificationModal();
+    
+    // Load initial data
+    loadTimetable();
+    setInterval(saveTimetable, 30000); // Auto-save every 30 seconds
+});
