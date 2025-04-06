@@ -615,3 +615,397 @@ function getPracticeHistory() {
 }
 
 // Continue to Part 3 for remaining modules...
+// script.js - Part 3/3: Diary, Rewards & Core Functions
+
+/*********************
+ * DIARY MODULE
+ *********************/
+function initDiary() {
+    document.getElementById('diary-date').valueAsDate = new Date();
+    document.getElementById('load-diary').addEventListener('click', loadDiaryForDate);
+    document.getElementById('save-diary').addEventListener('click', saveDiaryEntry);
+    document.getElementById('clear-diary').addEventListener('click', clearDiaryEntry);
+    
+    loadDiaryForDate(new Date().toISOString().split('T')[0]);
+    loadDiaryHistory();
+}
+
+function loadDiaryForDate(date = null) {
+    const selectedDate = date || document.getElementById('diary-date').value;
+    const entries = getDiaryEntries();
+    const entry = entries.find(e => e.date === selectedDate);
+    document.getElementById('diary-text').value = entry ? entry.text : '';
+}
+
+function saveDiaryEntry() {
+    const date = document.getElementById('diary-date').value;
+    const text = document.getElementById('diary-text').value.trim();
+    
+    if (!text) {
+        showNotification('Empty Entry', 'Diary entry cannot be empty.');
+        return;
+    }
+    
+    const entries = getDiaryEntries();
+    const existingIndex = entries.findIndex(e => e.date === date);
+    
+    if (existingIndex !== -1) {
+        entries[existingIndex].text = text;
+    } else {
+        entries.push({ date, text });
+    }
+    
+    localStorage.setItem('jeeProdigyDiaryEntries', JSON.stringify(entries));
+    showNotification('Entry Saved', 'Your diary entry has been saved successfully.');
+    loadDiaryHistory();
+}
+
+function clearDiaryEntry() {
+    if (confirm('Are you sure you want to clear this diary entry?')) {
+        document.getElementById('diary-text').value = '';
+    }
+}
+
+function loadDiaryHistory() {
+    const entries = getDiaryEntries().sort((a, b) => 
+        new Date(b.date) - new Date(a.date));
+    const historyList = document.getElementById('diary-history-list');
+    historyList.innerHTML = '';
+    
+    entries.forEach(entry => {
+        const entryElement = document.createElement('div');
+        entryElement.className = 'diary-entry-item';
+        entryElement.innerHTML = `
+            <div class="diary-entry-date">${formatDate(entry.date)}</div>
+            <div class="diary-entry-text">${entry.text.substring(0, 100)}${entry.text.length > 100 ? '...' : ''}</div>
+        `;
+        
+        entryElement.addEventListener('click', () => {
+            document.getElementById('diary-date').value = entry.date;
+            loadDiaryForDate(entry.date);
+            document.querySelector(`nav ul li[data-tab="diary"]`).click();
+        });
+        
+        historyList.appendChild(entryElement);
+    });
+}
+
+function formatDate(dateStr) {
+    const options = { year: 'numeric', month: 'short', day: 'numeric', weekday: 'short' };
+    return new Date(dateStr).toLocaleDateString(undefined, options);
+}
+
+function getDiaryEntries() {
+    const entriesJSON = localStorage.getItem('jeeProdigyDiaryEntries');
+    return entriesJSON ? JSON.parse(entriesJSON) : [];
+}
+
+/*********************
+ * REWARDS & PUNISHMENTS MODULES
+ *********************/
+function initRewards() {
+    document.getElementById('add-reward').addEventListener('click', addReward);
+    document.getElementById('new-reward').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addReward();
+    });
+    loadRewards();
+    loadEarnedRewards();
+}
+
+function initPunishments() {
+    document.getElementById('add-punishment').addEventListener('click', addPunishment);
+    document.getElementById('new-punishment').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addPunishment();
+    });
+    loadPunishments();
+    loadReceivedPunishments();
+}
+
+// Rewards functions
+function addReward() {
+    const text = document.getElementById('new-reward').value.trim();
+    if (!text) {
+        showNotification('Empty Reward', 'Please enter a reward description.');
+        return;
+    }
+    
+    const reward = { id: Date.now(), text };
+    addRewardToDOM(reward);
+    saveReward(reward);
+    document.getElementById('new-reward').value = '';
+}
+
+function addRewardToDOM(reward) {
+    const rewardsList = document.getElementById('rewards-list');
+    const rewardItem = document.createElement('div');
+    rewardItem.className = 'reward-item';
+    rewardItem.dataset.id = reward.id;
+    rewardItem.innerHTML = `
+        <div class="reward-text">${reward.text}</div>
+        <div class="reward-actions">
+            <button class="delete-reward"><i class="fas fa-trash"></i></button>
+        </div>
+    `;
+    
+    rewardItem.querySelector('.delete-reward').addEventListener('click', () => deleteReward(reward.id));
+    rewardsList.appendChild(rewardItem);
+}
+
+function deleteReward(rewardId) {
+    if (!confirm('Are you sure you want to delete this reward?')) return;
+    
+    const rewards = getRewards().filter(reward => reward.id != rewardId);
+    localStorage.setItem('jeeProdigyRewards', JSON.stringify(rewards));
+    document.querySelector(`.reward-item[data-id="${rewardId}"]`)?.remove();
+}
+
+function giveRandomReward(size = 'normal') {
+    const rewards = getRewards();
+    if (!rewards.length) {
+        showNotification('No Rewards', 'Add rewards in the Rewards section!');
+        return;
+    }
+    
+    const randomReward = rewards[Math.floor(Math.random() * rewards.length)];
+    const earnedReward = {
+        id: Date.now(),
+        rewardId: randomReward.id,
+        text: randomReward.text,
+        date: new Date().toISOString(),
+        size
+    };
+    
+    const earnedRewards = getEarnedRewards();
+    earnedRewards.push(earnedReward);
+    localStorage.setItem('jeeProdigyEarnedRewards', JSON.stringify(earnedRewards));
+    
+    showNotification('Reward Earned!', `You've earned ${size === 'big' ? 'a BIG' : 'a'} reward: ${randomReward.text}`);
+    loadEarnedRewards();
+}
+
+function loadRewards() {
+    document.getElementById('rewards-list').innerHTML = '';
+    getRewards().forEach(reward => addRewardToDOM(reward));
+}
+
+function loadEarnedRewards() {
+    const earnedRewards = getEarnedRewards()
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    const earnedList = document.getElementById('earned-rewards-list');
+    earnedList.innerHTML = '';
+    
+    earnedRewards.forEach(reward => {
+        const rewardItem = document.createElement('div');
+        rewardItem.className = 'earned-reward-item';
+        
+        const date = new Date(reward.date);
+        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        rewardItem.innerHTML = `
+            <div><strong>${reward.text}</strong></div>
+            <div>Earned on: ${dateStr}</div>
+            ${reward.size === 'big' ? '<div class="big-reward">BIG REWARD!</div>' : ''}
+        `;
+        
+        earnedList.appendChild(rewardItem);
+    });
+}
+
+function getRewards() {
+    const rewardsJSON = localStorage.getItem('jeeProdigyRewards');
+    return rewardsJSON ? JSON.parse(rewardsJSON) : [];
+}
+
+function saveReward(reward) {
+    const rewards = getRewards();
+    rewards.push(reward);
+    localStorage.setItem('jeeProdigyRewards', JSON.stringify(rewards));
+}
+
+function getEarnedRewards() {
+    const earnedJSON = localStorage.getItem('jeeProdigyEarnedRewards');
+    return earnedJSON ? JSON.parse(earnedJSON) : [];
+}
+
+// Punishments functions (similar structure to rewards)
+function addPunishment() {
+    const text = document.getElementById('new-punishment').value.trim();
+    if (!text) {
+        showNotification('Empty Punishment', 'Please enter a punishment description.');
+        return;
+    }
+    
+    const punishment = { id: Date.now(), text };
+    addPunishmentToDOM(punishment);
+    savePunishment(punishment);
+    document.getElementById('new-punishment').value = '';
+}
+
+function addPunishmentToDOM(punishment) {
+    const punishmentsList = document.getElementById('punishments-list');
+    const punishmentItem = document.createElement('div');
+    punishmentItem.className = 'punishment-item';
+    punishmentItem.dataset.id = punishment.id;
+    punishmentItem.innerHTML = `
+        <div class="punishment-text">${punishment.text}</div>
+        <div class="punishment-actions">
+            <button class="delete-punishment"><i class="fas fa-trash"></i></button>
+        </div>
+    `;
+    
+    punishmentItem.querySelector('.delete-punishment').addEventListener('click', () => deletePunishment(punishment.id));
+    punishmentsList.appendChild(punishmentItem);
+}
+
+function deletePunishment(punishmentId) {
+    if (!confirm('Are you sure you want to delete this punishment?')) return;
+    
+    const punishments = getPunishments().filter(p => p.id != punishmentId);
+    localStorage.setItem('jeeProdigyPunishments', JSON.stringify(punishments));
+    document.querySelector(`.punishment-item[data-id="${punishmentId}"]`)?.remove();
+}
+
+function giveRandomPunishment() {
+    const punishments = getPunishments();
+    if (!punishments.length) {
+        showNotification('No Punishments', 'Add punishments in the Punishments section!');
+        return;
+    }
+    
+    const randomPunishment = punishments[Math.floor(Math.random() * punishments.length)];
+    const receivedPunishment = {
+        id: Date.now(),
+        punishmentId: randomPunishment.id,
+        text: randomPunishment.text,
+        date: new Date().toISOString()
+    };
+    
+    const receivedPunishments = getReceivedPunishments();
+    receivedPunishments.push(receivedPunishment);
+    localStorage.setItem('jeeProdigyReceivedPunishments', JSON.stringify(receivedPunishments));
+    
+    showNotification('Punishment Received', `You've received a punishment: ${randomPunishment.text}`);
+    loadReceivedPunishments();
+}
+
+function loadPunishments() {
+    document.getElementById('punishments-list').innerHTML = '';
+    getPunishments().forEach(punishment => addPunishmentToDOM(punishment));
+}
+
+function loadReceivedPunishments() {
+    const receivedPunishments = getReceivedPunishments()
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+    const receivedList = document.getElementById('received-punishments-list');
+    receivedList.innerHTML = '';
+    
+    receivedPunishments.forEach(punishment => {
+        const punishmentItem = document.createElement('div');
+        punishmentItem.className = 'received-punishment-item';
+        
+        const date = new Date(punishment.date);
+        const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        punishmentItem.innerHTML = `
+            <div><strong>${punishment.text}</strong></div>
+            <div>Received on: ${dateStr}</div>
+        `;
+        
+        receivedList.appendChild(punishmentItem);
+    });
+}
+
+function getPunishments() {
+    const punishmentsJSON = localStorage.getItem('jeeProdigyPunishments');
+    return punishmentsJSON ? JSON.parse(punishmentsJSON) : [];
+}
+
+function savePunishment(punishment) {
+    const punishments = getPunishments();
+    punishments.push(punishment);
+    localStorage.setItem('jeeProdigyPunishments', JSON.stringify(punishments));
+}
+
+function getReceivedPunishments() {
+    const receivedJSON = localStorage.getItem('jeeProdigyReceivedPunishments');
+    return receivedJSON ? JSON.parse(receivedJSON) : [];
+}
+
+/*********************
+ * RESOURCES MODULE
+ *********************/
+function initResources() {
+    document.getElementById('add-resource').addEventListener('click', addResource);
+    document.getElementById('resource-name').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addResource();
+    });
+    
+    document.querySelectorAll('.resource-filter').forEach(filter => {
+        filter.addEventListener('click', () => {
+            document.querySelectorAll('.resource-filter').forEach(f => f.classList.remove('active'));
+            filter.classList.add('active');
+            filterResources(filter.getAttribute('data-filter'));
+        });
+    });
+    
+    loadResources();
+}
+
+function addResource() {
+    const name = document.getElementById('resource-name').value.trim();
+    const type = document.getElementById('resource-type').value.trim();
+    const link = document.getElementById('resource-link').value.trim();
+    
+    if (!name) {
+        showNotification('Empty Name', 'Please enter a resource name.');
+        return;
+    }
+    
+    const resource = {
+        id: Date.now(),
+        name,
+        type: type || 'Other',
+        link: link || '#',
+        addedDate: new Date().toISOString()
+    };
+    
+    addResourceToDOM(resource);
+    saveResource(resource);
+    
+    document.getElementById('resource-name').value = '';
+    document.getElementById('resource-type').value = '';
+    document.getElementById('resource-link').value = '';
+    
+    updateResourceCount();
+}
+
+function addResourceToDOM(resource) {
+    const resourcesList = document.getElementById('resources-list');
+    const resourceItem = document.createElement('div');
+    resourceItem.className = 'resource-item';
+    resourceItem.dataset.id = resource.id;
+    resourceItem.dataset.type = resource.type.toLowerCase();
+    
+    resourceItem.innerHTML = `
+        <div class="resource-info">
+            <div class="resource-name">${resource.name}</div>
+            <div class="resource-meta">
+                <span class="resource-type">${resource.type}</span>
+                ${resource.link !== '#' ? `· <a href="${resource.link}" class="resource-link" target="_blank">Link</a>` : ''}
+            </div>
+        </div>
+        <div class="resource-actions">
+            <button class="delete-resource"><i class="fas fa-trash"></i></button>
+        </div>
+    `;
+    
+    resourceItem.querySelector('.delete-resource').addEventListener('click', () => deleteResource(resource.id));
+    resourcesList.appendChild(resourceItem);
+}
+
+function deleteResource(resourceId) {
+    if (!confirm('Are you sure you want to delete this resource?')) return;
+    
+    const resources = getResources().filter(resource => resource.id != resourceId);
+    localStorage.setItem('jeeProdigyResources', JSON.stringify(resources));
+    document.querySelector(`.resource-item[data-id="${resourceId}"]`)?.
