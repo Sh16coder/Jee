@@ -1,228 +1,294 @@
-<!DOCTYPE html><html lang="en" data-theme="light">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Guru Study Planner</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    :root[data-theme='light'] {
-      --bg-color: #f0f2f5;
-      --text-color: #222;
-      --card-color: #fff;
-      --accent-color: #007bff;
-    }
-    :root[data-theme='dark'] {
-      --bg-color: #1e1f26;
-      --text-color: #f5f5f5;
-      --card-color: #2e2e3a;
-      --accent-color: #00c6ff;
-    }body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-}
-
-.container {
-  max-width: 700px;
-  margin: auto;
-  padding: 2rem;
-}
-
-.section {
-  background-color: var(--card-color);
-  border-radius: 1rem;
-  padding: 1rem;
-  margin-bottom: 2rem;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-h1, h2 {
-  color: var(--accent-color);
-}
-
-input, textarea, button {
-  display: block;
-  width: 100%;
-  margin: 0.5rem 0;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-}
-
-button {
-  background-color: var(--accent-color);
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-
-.theme-toggle {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  display: flex;
-  align-items: center;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-ul li {
-  padding: 0.5rem;
-  margin: 0.25rem 0;
-  border-bottom: 1px solid #ccc;
-}
-
-  </style>
-  <script type="module">
-    // Firebase config (replace with your Firebase project info)
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-    import { getFirestore, collection, addDoc, getDocs } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';const firebaseConfig = {
-  apiKey: "AIzaSyBSxHz0oSES5RcqqX4SPVfceST3UrEGOnU",
-  authDomain: "jees-94077.firebaseapp.com",
-  databaseURL: "https://jees-94077-default-rtdb.firebaseio.com",
-  projectId: "jees-94077",
-  storageBucket: "jees-94077.firebasestorage.app",
-  messagingSenderId: "863537448366",
-  appId: "1:863537448366:web:93cb50b4a4ecdafa61b43f"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-// Daily quote logic
-const quotes = [
-  "Keep pushing forward.", "Consistency is the key.", "No pain, no gain.",
-  "You were born to win.", "Do it for your future self.",
-  "Discipline beats motivation.", "JEE is just a milestone, not a mountain.",
-  "Today’s struggle builds tomorrow’s strength.", "Success requires sacrifice.",
-  "Make your future self proud." // add 20 more
-];
-document.getElementById("quote").textContent = quotes[new Date().getDate() % quotes.length];
-
-// Timetable logic
-const timetableForm = document.getElementById("timetableForm");
-const timetableList = document.getElementById("timetableList");
-timetableForm.onsubmit = (e) => {
-  e.preventDefault();
-  const time = document.getElementById("time").value;
-  const task = document.getElementById("task").value;
-  const entry = `${time} - ${task}`;
-  localStorage.setItem(time, task);
-  timetableList.innerHTML += `<li>${entry}</li>`;
-  timetableForm.reset();
-};
-
-// To-Do logic
-const todoForm = document.getElementById("todoForm");
-const todoList = document.getElementById("todoList");
-todoForm.onsubmit = (e) => {
-  e.preventDefault();
-  const task = document.getElementById("todoTask").value;
-  const deadline = new Date(document.getElementById("deadline").value);
-  const now = new Date();
-  const late = now > deadline;
-  const item = `<li style="color:${late ? 'red' : 'green'}">${task} - ${deadline.toLocaleString()}</li>`;
-  todoList.innerHTML += item;
-  todoForm.reset();
-};
-
-// Diary and resources
-window.saveDiary = () => {
-  const note = document.getElementById("diaryNote").value;
-  localStorage.setItem("diary", note);
-  alert("Diary saved!");
-}
-window.saveResources = () => {
-  const res = document.getElementById("resources").value;
-  localStorage.setItem("resources", res);
-  alert("Resources saved!");
-}
-
-// Punishments and rewards
-window.savePunishmentsRewards = () => {
-  const puns = document.getElementById("punishments").value;
-  const rews = document.getElementById("rewards").value;
-  localStorage.setItem("punishments", puns);
-  localStorage.setItem("rewards", rews);
-  alert("Saved punishments and rewards!");
-}
-
-// Theme toggle
-window.toggleTheme = () => {
-  const html = document.documentElement;
-  const isDark = html.getAttribute("data-theme") === "dark";
-  html.setAttribute("data-theme", isDark ? "light" : "dark");
-  localStorage.setItem("theme", isDark ? "light" : "dark");
-}
-window.onload = () => {
-  const savedTheme = localStorage.getItem("theme") || "light";
-  document.documentElement.setAttribute("data-theme", savedTheme);
-  document.getElementById("themeSwitcher").checked = savedTheme === "dark";
-}
-
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JEE Prodigy - Your Ultimate JEE Preparation Companion</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 </head>
 <body>
-  <div class="theme-toggle">
-    <label for="themeSwitcher">Dark Mode</label>
-    <input type="checkbox" id="themeSwitcher" onclick="toggleTheme()">
-  </div>  <div class="container">
-    <h1 id="quote"></h1><section class="section">
-  <h2>Custom Timetable</h2>
-  <form id="timetableForm">
-    <input type="time" id="time" required />
-    <input type="text" id="task" placeholder="Task" required />
-    <button type="submit">Add Task</button>
-  </form>
-  <ul id="timetableList"></ul>
-</section>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>JEE Prodigy</h1>
+                <p>Your Ultimate Preparation Companion</p>
+            </div>
+            <div class="quote-container">
+                <p id="daily-quote">"Success is the sum of small efforts repeated day in and day out."</p>
+                <p id="quote-author">- Robert Collier</p>
+            </div>
+        </header>
 
-<section class="section">
-  <h2>To-Do List</h2>
-  <form id="todoForm">
-    <input type="text" id="todoTask" placeholder="Enter task" required />
-    <input type="datetime-local" id="deadline" required />
-    <button type="submit">Add To-Do</button>
-  </form>
-  <ul id="todoList"></ul>
-</section>
+        <nav>
+            <ul>
+                <li class="active" data-tab="timetable"><i class="fas fa-calendar-alt"></i> Timetable</li>
+                <li data-tab="todo"><i class="fas fa-tasks"></i> To-Do List</li>
+                <li data-tab="questions"><i class="fas fa-question-circle"></i> Question Practice</li>
+                <li data-tab="diary"><i class="fas fa-book"></i> Study Diary</li>
+                <li data-tab="rewards"><i class="fas fa-trophy"></i> Rewards</li>
+                <li data-tab="punishments"><i class="fas fa-exclamation-triangle"></i> Punishments</li>
+                <li data-tab="resources"><i class="fas fa-book-open"></i> Resources</li>
+            </ul>
+        </nav>
 
-<section class="section">
-  <h2>Question Practice</h2>
-  <form id="questionForm">
-    <input type="date" id="qpDate" required />
-    <input type="text" id="qpChapter" placeholder="Chapter" required />
-    <input type="number" id="qpTotalQuestions" placeholder="Total Questions" required />
-    <input type="number" id="qpTime" placeholder="Total Time (minutes)" required />
-    <button type="submit">Start Practice</button>
-  </form>
-  <div id="stopwatchContainer"></div>
-</section>
+        <main>
+            <!-- Timetable Section -->
+            <section id="timetable" class="tab-content active">
+                <h2><i class="fas fa-calendar-alt"></i> Your Study Timetable</h2>
+                <div class="timetable-controls">
+                    <button id="add-time-slot"><i class="fas fa-plus"></i> Add Time Slot</button>
+                    <button id="clear-timetable"><i class="fas fa-trash"></i> Clear Timetable</button>
+                </div>
+                <div class="timetable-grid">
+                    <div class="timetable-header">
+                        <div>Time</div>
+                        <div>Monday</div>
+                        <div>Tuesday</div>
+                        <div>Wednesday</div>
+                        <div>Thursday</div>
+                        <div>Friday</div>
+                        <div>Saturday</div>
+                        <div>Sunday</div>
+                    </div>
+                    <div class="timetable-body" id="timetable-body">
+                        <!-- Time slots will be added here dynamically -->
+                    </div>
+                </div>
+                <div class="add-slot-modal" id="add-slot-modal">
+                    <div class="modal-content">
+                        <span class="close-modal">&times;</span>
+                        <h3>Add New Time Slot</h3>
+                        <form id="time-slot-form">
+                            <div class="form-group">
+                                <label for="time-range">Time Range:</label>
+                                <input type="time" id="start-time" required>
+                                <span>to</span>
+                                <input type="time" id="end-time" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="day">Day:</label>
+                                <select id="day" required>
+                                    <option value="Monday">Monday</option>
+                                    <option value="Tuesday">Tuesday</option>
+                                    <option value="Wednesday">Wednesday</option>
+                                    <option value="Thursday">Thursday</option>
+                                    <option value="Friday">Friday</option>
+                                    <option value="Saturday">Saturday</option>
+                                    <option value="Sunday">Sunday</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="activity">Activity/Subject:</label>
+                                <input type="text" id="activity" placeholder="e.g., Physics - Electrostatics" required>
+                            </div>
+                            <button type="submit">Add to Timetable</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
 
-<section class="section">
-  <h2>Daily Diary</h2>
-  <textarea id="diaryNote" placeholder="Write your daily note..."></textarea>
-  <button onclick="saveDiary()">Save Note</button>
-</section>
+            <!-- To-Do List Section -->
+            <section id="todo" class="tab-content">
+                <h2><i class="fas fa-tasks"></i> Today's To-Do List</h2>
+                <div class="todo-controls">
+                    <div class="todo-input">
+                        <input type="text" id="new-task" placeholder="Add a new task...">
+                        <input type="time" id="task-time">
+                        <button id="add-task"><i class="fas fa-plus"></i> Add</button>
+                    </div>
+                    <div class="todo-filters">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="pending">Pending</button>
+                        <button class="filter-btn" data-filter="completed">Completed</button>
+                    </div>
+                </div>
+                <div class="todo-list" id="todo-list">
+                    <!-- Tasks will be added here dynamically -->
+                </div>
+                <div class="todo-stats">
+                    <p>Total Tasks: <span id="total-tasks">0</span></p>
+                    <p>Completed: <span id="completed-tasks">0</span></p>
+                    <p>Pending: <span id="pending-tasks">0</span></p>
+                </div>
+            </section>
 
-<section class="section">
-  <h2>Study Resources</h2>
-  <textarea id="resources" placeholder="List your resources..."></textarea>
-  <button onclick="saveResources()">Save Resources</button>
-</section>
+            <!-- Question Practice Section -->
+            <section id="questions" class="tab-content">
+                <h2><i class="fas fa-question-circle"></i> Question Practice Tracker</h2>
+                <div class="question-form">
+                    <form id="question-practice-form">
+                        <div class="form-group">
+                            <label for="practice-date">Date:</label>
+                            <input type="date" id="practice-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="chapter">Chapter:</label>
+                            <input type="text" id="chapter" placeholder="Enter chapter name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="total-questions">Total Questions:</label>
+                            <input type="number" id="total-questions" min="1" placeholder="How many questions?" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="allotted-time">Allotted Time (minutes):</label>
+                            <input type="number" id="allotted-time" min="1" placeholder="Time in minutes" required>
+                        </div>
+                        <button type="submit">Start Practice Session</button>
+                    </form>
+                </div>
+                <div class="question-session" id="question-session" style="display: none;">
+                    <h3>Current Session: <span id="current-chapter"></span></h3>
+                    <div class="session-info">
+                        <p>Questions: <span id="session-questions">0</span>/<span id="total-session-questions">0</span></p>
+                        <p>Time: <span id="session-time">00:00:00</span></p>
+                    </div>
+                    <div class="timer-container">
+                        <div class="timer" id="question-timer">00:00:00</div>
+                        <div class="timer-controls">
+                            <button id="start-timer"><i class="fas fa-play"></i> Start</button>
+                            <button id="stop-timer"><i class="fas fa-stop"></i> Next Question</button>
+                            <button id="reset-timer"><i class="fas fa-redo"></i> Reset</button>
+                        </div>
+                    </div>
+                    <div class="session-complete" id="session-complete" style="display: none;">
+                        <h4>Session Complete!</h4>
+                        <div class="result-form">
+                            <p>Questions Attempted: <span id="attempted-questions">0</span>/<span id="total-questions-display">0</span></p>
+                            <label for="correct-questions">How many were correct?</label>
+                            <input type="number" id="correct-questions" min="0">
+                            <button id="submit-results">Submit Results</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="question-history">
+                    <h3>Your Practice History</h3>
+                    <table id="question-history-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Chapter</th>
+                                <th>Total Qs</th>
+                                <th>Attempted</th>
+                                <th>Correct</th>
+                                <th>Avg Time/Q</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- History will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
 
-<section class="section">
-  <h2>Punishments & Rewards</h2>
-  <textarea id="punishments" placeholder="Enter punishments (one per line)"></textarea>
-  <textarea id="rewards" placeholder="Enter rewards (one per line)"></textarea>
-  <button onclick="savePunishmentsRewards()">Save</button>
-</section>
+            <!-- Study Diary Section -->
+            <section id="diary" class="tab-content">
+                <h2><i class="fas fa-book"></i> Study Diary</h2>
+                <div class="diary-controls">
+                    <input type="date" id="diary-date">
+                    <button id="load-diary">Load Entry</button>
+                </div>
+                <div class="diary-entry">
+                    <textarea id="diary-text" placeholder="Write about your study day... what you learned, challenges faced, how you felt, etc."></textarea>
+                </div>
+                <div class="diary-actions">
+                    <button id="save-diary"><i class="fas fa-save"></i> Save Entry</button>
+                    <button id="clear-diary"><i class="fas fa-trash"></i> Clear</button>
+                </div>
+                <div class="diary-history">
+                    <h3>Past Entries</h3>
+                    <div class="diary-history-list" id="diary-history-list">
+                        <!-- Diary entries will be listed here -->
+                    </div>
+                </div>
+            </section>
 
-  </div>
+            <!-- Rewards Section -->
+            <section id="rewards" class="tab-content">
+                <h2><i class="fas fa-trophy"></i> Your Rewards</h2>
+                <div class="rewards-description">
+                    <p>Define rewards that you'll earn when you complete your goals. These will be randomly selected when you achieve success.</p>
+                </div>
+                <div class="rewards-input">
+                    <input type="text" id="new-reward" placeholder="Add a new reward (e.g., Watch an episode of favorite show)">
+                    <button id="add-reward"><i class="fas fa-plus"></i> Add Reward</button>
+                </div>
+                <div class="rewards-list" id="rewards-list">
+                    <!-- Rewards will be listed here -->
+                </div>
+                <div class="earned-rewards">
+                    <h3>Earned Rewards</h3>
+                    <div id="earned-rewards-list">
+                        <!-- Earned rewards will appear here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Punishments Section -->
+            <section id="punishments" class="tab-content">
+                <h2><i class="fas fa-exclamation-triangle"></i> Your Punishments</h2>
+                <div class="punishments-description">
+                    <p>Define punishments that you'll face when you don't meet your goals. These will be randomly selected when you fail to complete tasks.</p>
+                </div>
+                <div class="punishments-input">
+                    <input type="text" id="new-punishment" placeholder="Add a new punishment (e.g., No social media for 1 day)">
+                    <button id="add-punishment"><i class="fas fa-plus"></i> Add Punishment</button>
+                </div>
+                <div class="punishments-list" id="punishments-list">
+                    <!-- Punishments will be listed here -->
+                </div>
+                <div class="received-punishments">
+                    <h3>Received Punishments</h3>
+                    <div id="received-punishments-list">
+                        <!-- Received punishments will appear here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- Resources Section -->
+            <section id="resources" class="tab-content">
+                <h2><i class="fas fa-book-open"></i> Study Resources</h2>
+                <div class="resources-description">
+                    <p>Track all the resources you're using for JEE preparation - books, online courses, YouTube channels, etc.</p>
+                </div>
+                <div class="resources-input">
+                    <input type="text" id="resource-name" placeholder="Resource name (e.g., HC Verma Vol 1)">
+                    <input type="text" id="resource-type" placeholder="Type (Book/Video/Website)">
+                    <input type="text" id="resource-link" placeholder="Link (if applicable)">
+                    <button id="add-resource"><i class="fas fa-plus"></i> Add Resource</button>
+                </div>
+                <div class="resources-list" id="resources-list">
+                    <!-- Resources will be listed here -->
+                </div>
+                <div class="resource-stats">
+                    <p>Total Resources: <span id="total-resources">0</span></p>
+                    <div class="resource-filters">
+                        <button class="resource-filter active" data-filter="all">All</button>
+                        <button class="resource-filter" data-filter="book">Books</button>
+                        <button class="resource-filter" data-filter="video">Videos</button>
+                        <button class="resource-filter" data-filter="website">Websites</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Notification Modal -->
+        <div class="notification-modal" id="notification-modal">
+            <div class="notification-content">
+                <span class="close-notification">&times;</span>
+                <h3 id="notification-title">Notification</h3>
+                <p id="notification-message"></p>
+                <button id="notification-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="firebase-config.js"></script>
 </body>
-</html>
+                          </html>
