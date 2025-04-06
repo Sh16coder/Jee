@@ -162,6 +162,7 @@ function initApp() {
     initTodoList();
     initQuestionPractice();
     initDiary();
+    initLinks();
     initRewards();
     initPunishments();
     initResources();
@@ -982,6 +983,103 @@ function initDiary() {
         return entriesJSON ? JSON.parse(entriesJSON) : [];
     }
 }
+/*********************
+ * USEFUL LINKS MODULE
+ *********************/
+function initLinks() {
+    document.getElementById('add-link').addEventListener('click', addLink);
+    document.getElementById('new-link-name').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addLink();
+    });
+    loadLinks();
+}
+
+function addLink() {
+    const name = document.getElementById('new-link-name').value.trim();
+    const url = document.getElementById('new-link-url').value.trim();
+    
+    if (!name || !url) {
+        showNotification('Missing Info', 'Please enter both name and URL');
+        return;
+    }
+    
+    if (!isValidUrl(url)) {
+        showNotification('Invalid URL', 'Please enter a valid URL starting with http:// or https://');
+        return;
+    }
+    
+    const link = {
+        id: Date.now(),
+        name,
+        url: url.startsWith('http') ? url : `https://${url}`,
+        dateAdded: new Date().toISOString()
+    };
+    
+    addLinkToDOM(link);
+    saveLink(link);
+    
+    document.getElementById('new-link-name').value = '';
+    document.getElementById('new-link-url').value = '';
+}
+
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+function addLinkToDOM(link) {
+    const linksList = document.getElementById('links-list');
+    const linkItem = document.createElement('div');
+    linkItem.className = 'link-item';
+    linkItem.dataset.id = link.id;
+    
+    linkItem.innerHTML = `
+        <a href="${link.url}" target="_blank">${link.name}</a>
+        <div class="link-actions">
+            <button class="copy-link" title="Copy URL"><i class="fas fa-copy"></i></button>
+            <button class="delete-link" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+    `;
+    
+    linkItem.querySelector('.copy-link').addEventListener('click', () => {
+        navigator.clipboard.writeText(link.url);
+        showNotification('Copied!', 'Link URL copied to clipboard');
+    });
+    
+    linkItem.querySelector('.delete-link').addEventListener('click', () => deleteLink(link.id));
+    
+    linksList.appendChild(linkItem);
+}
+
+function deleteLink(linkId) {
+    if (!confirm('Are you sure you want to delete this link?')) return;
+    
+    const links = getLinks().filter(link => link.id != linkId);
+    localStorage.setItem('jeeProdigyLinks', JSON.stringify(links));
+    document.querySelector(`.link-item[data-id="${linkId}"]`)?.remove();
+}
+
+function loadLinks() {
+    document.getElementById('links-list').innerHTML = '';
+    getLinks().forEach(link => addLinkToDOM(link));
+}
+
+function getLinks() {
+    const linksJSON = localStorage.getItem('jeeProdigyLinks');
+    return linksJSON ? JSON.parse(linksJSON) : [];
+}
+
+function saveLink(link) {
+    const links = getLinks();
+    links.push(link);
+    localStorage.setItem('jeeProdigyLinks', JSON.stringify(links));
+}
+
+
 // Rewards Module
 function initRewards() {
     const newRewardInput = document.getElementById('new-reward');
