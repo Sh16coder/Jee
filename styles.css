@@ -597,7 +597,83 @@ button[type="submit"]:hover {
     font-size: 0.9rem;
     white-space: pre-line;
 }
+/* Links Section Styles */
+#links.tab-content {
+    padding: 20px;
+}
 
+.links-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.links-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.links-input input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.links-input button {
+    padding: 10px 15px;
+    background-color: #4a6fa5;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.links-input button:hover {
+    background-color: #3a5a80;
+}
+
+.links-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.link-item {
+    background-color: white;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.link-item a {
+    color: #4a6fa5;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.link-item a:hover {
+    text-decoration: underline;
+}
+
+.link-actions button {
+    background: none;
+    border: none;
+    color: #888;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.link-actions button:hover {
+    color: #d33;
+}
 /* Rewards & Punishments Styles */
 .rewards-description,
 .punishments-description {
