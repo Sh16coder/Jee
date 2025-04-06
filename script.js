@@ -308,81 +308,83 @@ function initTimetable() {
     
     // Save timetable to localStorage
     function saveTimetable() {
-        const timetableData = [];
-        const timeRows = Array.from(document.querySelectorAll('.timetable-body > div'));
-        
-        timeRows.forEach(row => {
-            const timeText = row.firstChild.textContent;
-            if (timeText.includes(' - ')) {
-                const [startTime, endTime] = timeText.split(' - ').map(t => t.trim());
-                const days = Array.from(row.children).slice(1); // Skip the time cell
-                
-                days.forEach((dayCell, index) => {
-                    const activitySlot = dayCell.querySelector('.time-slot');
-                    if (activitySlot) {
-                        const activity = activitySlot.querySelector('.activity').textContent;
-                        const day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][index];
-                        
-                        timetableData.push({
-                            startTime,
-                            endTime,
-                            day,
-                            activity
-                        });
-                    }
-                });
-            }
-        });
-        
-        localStorage.setItem('jeeProdigyTimetable', JSON.stringify(timetableData));
+    const timetableData = [];
+    const timeRows = document.querySelectorAll('.timetable-body > div');
+    
+    timeRows.forEach(row => {
+        const timeText = row.firstChild.textContent;
+        if (timeText.includes(' - ')) {
+            const [startTime, endTime] = timeText.split(' - ').map(t => t.trim());
+            const days = Array.from(row.children).slice(1); // Skip the time cell
+            
+            days.forEach((dayCell, index) => {
+                const activitySlot = dayCell.querySelector('.time-slot');
+                if (activitySlot) {
+                    const activity = activitySlot.querySelector('.activity').textContent;
+                    const day = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+                                'Friday', 'Saturday', 'Sunday'][index];
+                    
+                    timetableData.push({
+                        startTime,
+                        endTime,
+                        day,
+                        activity
+                    });
+                }
+            });
+        }
+    });
+    
+    localStorage.setItem('jeeProdigyTimetable', JSON.stringify(timetableData));
     }
+    
     
     // Load timetable from localStorage
     function loadTimetable() {
-        const savedTimetable = localStorage.getItem('jeeProdigyTimetable');
-        if (savedTimetable) {
-            const timetableData = JSON.parse(savedTimetable);
+    const savedTimetable = localStorage.getItem('jeeProdigyTimetable');
+    if (savedTimetable) {
+        const timetableData = JSON.parse(savedTimetable);
+        const timetableBody = document.getElementById('timetable-body');
+        
+        // Clear existing timetable
+        timetableBody.innerHTML = '';
+        
+        // Group by time slots
+        const timeSlotMap = new Map();
+        
+        timetableData.forEach(slot => {
+            const timeKey = `${slot.startTime} - ${slot.endTime}`;
+            if (!timeSlotMap.has(timeKey)) {
+                timeSlotMap.set(timeKey, {});
+            }
+            timeSlotMap.get(timeKey)[slot.day] = slot.activity;
+        });
+        
+        // Create rows for each time slot
+        timeSlotMap.forEach((dayActivities, timeRange) => {
+            const row = document.createElement('div');
+            row.textContent = timeRange;
             
-            // Clear existing timetable
-            timetableBody.innerHTML = '';
-            
-            // Group by time slots
-            const timeSlotMap = new Map();
-            
-            timetableData.forEach(slot => {
-                const timeKey = `${slot.startTime} - ${slot.endTime}`;
-                if (!timeSlotMap.has(timeKey)) {
-                    timeSlotMap.set(timeKey, {});
+            // Create cells for each day
+            ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 
+             'Friday', 'Saturday', 'Sunday'].forEach(day => {
+                const dayCell = document.createElement('div');
+                if (dayActivities[day]) {
+                    const timeSlot = document.createElement('div');
+                    timeSlot.className = 'time-slot';
+                    timeSlot.innerHTML = `
+                        <p class="time">${timeRange}</p>
+                        <p class="activity">${dayActivities[day]}</p>
+                    `;
+                    dayCell.appendChild(timeSlot);
                 }
-                timeSlotMap.get(timeKey)[slot.day] = slot.activity;
+                row.appendChild(dayCell);
             });
             
-            // Create rows for each time slot
-            timeSlotMap.forEach((dayActivities, timeRange) => {
-                const row = document.createElement('div');
-                row.textContent = timeRange;
-                
-                // Create cells for each day
-                ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].forEach(day => {
-                    const dayCell = document.createElement('div');
-                    if (dayActivities[day]) {
-                        const timeSlot = document.createElement('div');
-                        timeSlot.className = 'time-slot';
-                        timeSlot.innerHTML = `
-                            <p class="time">${timeRange}</p>
-                            <p class="activity">${dayActivities[day]}</p>
-                        `;
-                        dayCell.appendChild(timeSlot);
-                    }
-                    row.appendChild(dayCell);
-                });
-                
-                timetableBody.appendChild(row);
-            });
-        }
+            timetableBody.appendChild(row);
+        });
     }
-}
-
+    }
 // To-Do List Module
 function initTodoList() {
     const todoInput = document.getElementById('new-task');
